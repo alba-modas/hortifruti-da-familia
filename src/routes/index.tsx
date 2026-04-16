@@ -60,25 +60,26 @@ function StorePage() {
     <div className="min-h-screen bg-background pb-24">
       <StoreHeader settings={settings} />
 
-      {/* Search */}
-      <div className="max-w-2xl mx-auto px-4 pt-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar produto..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl border bg-card text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
-          />
+      {/* Sticky Search + Categories */}
+      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-b shadow-sm">
+        <div className="max-w-2xl mx-auto px-4 pt-3">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Buscar produto..."
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border bg-card text-foreground placeholder:text-muted-foreground focus:ring-2 focus:ring-primary focus:border-primary outline-none text-sm"
+            />
+          </div>
         </div>
-      </div>
 
-      {/* Categories */}
-      {!loading && (
-        <div className="max-w-2xl mx-auto">
-          <CategoryBar categories={categories} activeCategory={activeCategory} onSelect={setActiveCategory} />
-        </div>
-      )}
+        {!loading && (
+          <div className="max-w-2xl mx-auto">
+            <CategoryBar categories={categories} activeCategory={activeCategory} onSelect={setActiveCategory} />
+          </div>
+        )}
+      </div>
 
       {loading ? (
         <div className="flex items-center justify-center py-20">
