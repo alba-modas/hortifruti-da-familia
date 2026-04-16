@@ -13,6 +13,7 @@ function AdminSettings() {
   const [form, setForm] = useState({
     store_name: '', whatsapp_primary: '', whatsapp_secondary: '', active_whatsapp: 'primary' as string,
     delivery_fee_enabled: false, delivery_fee_amount: 0, opening_hours: '', is_open: true, logo_url: '',
+    delete_password: '',
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -29,6 +30,7 @@ function AdminSettings() {
         opening_hours: settings.opening_hours,
         is_open: settings.is_open,
         logo_url: settings.logo_url || '',
+        delete_password: (settings as any).delete_password || '',
       });
     }
   }, [settings]);
@@ -47,6 +49,7 @@ function AdminSettings() {
         opening_hours: form.opening_hours,
         is_open: form.is_open,
         logo_url: form.logo_url || null,
+        delete_password: form.delete_password,
       }).eq('id', settings.id);
       refetch();
       alert('Configurações salvas!');
