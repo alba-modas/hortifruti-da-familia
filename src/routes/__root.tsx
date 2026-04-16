@@ -34,6 +34,10 @@ export const Route = createRootRoute({
       { name: "author", content: "Hortifruti da Família" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
+      { property: "og:title", content: "Hortifruti da Família" },
+      { name: "twitter:title", content: "Hortifruti da Família" },
+      { property: "og:description", content: "Frutas, verduras e legumes fresquinhos. Monte seu pedido online!" },
+      { name: "twitter:description", content: "Frutas, verduras e legumes fresquinhos. Monte seu pedido online!" },
     ],
     links: [
       {
