@@ -232,6 +232,7 @@ export type Database = {
         Row: {
           active_whatsapp: string
           created_at: string
+          delete_password: string
           delivery_fee_amount: number
           delivery_fee_enabled: boolean
           id: string
@@ -246,6 +247,7 @@ export type Database = {
         Insert: {
           active_whatsapp?: string
           created_at?: string
+          delete_password?: string
           delivery_fee_amount?: number
           delivery_fee_enabled?: boolean
           id?: string
@@ -260,6 +262,7 @@ export type Database = {
         Update: {
           active_whatsapp?: string
           created_at?: string
+          delete_password?: string
           delivery_fee_amount?: number
           delivery_fee_enabled?: boolean
           id?: string

@@ -1,0 +1,1 @@
+ALTER TABLE public.store_settings ADD COLUMN delete_password text NOT NULL DEFAULT '';
