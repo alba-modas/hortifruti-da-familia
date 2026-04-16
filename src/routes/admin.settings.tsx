@@ -146,6 +146,12 @@ function AdminSettings() {
           </div>
         )}
 
+        <div>
+          <label className="block text-sm font-bold mb-1">Senha para exclusão de pedidos</label>
+          <input type="password" value={form.delete_password} onChange={(e) => setForm({ ...form, delete_password: e.target.value })}
+            className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm" placeholder="Defina uma senha" />
+        </div>
+
         <button onClick={handleSave} disabled={saving} className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-extrabold disabled:opacity-60 flex items-center justify-center gap-2">
           {saving ? <Loader2 className="w-5 h-5 animate-spin" /> : <Save className="w-5 h-5" />}
           {saving ? 'Salvando...' : 'Salvar Configurações'}
