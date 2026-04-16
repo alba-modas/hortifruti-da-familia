@@ -24,7 +24,7 @@ function AdminOrders() {
   const filtered = filter === 'all' ? orders : orders.filter((o: any) => o.status === filter);
 
   const updateStatus = async (orderId: string, status: string) => {
-    await supabase.from('orders').update({ status }).eq('id', orderId);
+    await supabase.from('orders').update({ status: status as any }).eq('id', orderId);
     refetch();
   };
 
