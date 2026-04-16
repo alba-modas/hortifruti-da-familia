@@ -21,7 +21,7 @@ function AdminOrders() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
 
-  const filtered = filter === 'all' ? orders : orders.filter((o) => o.status === filter);
+  const filtered = filter === 'all' ? orders : orders.filter((o: any) => o.status === filter);
 
   const updateStatus = async (orderId: string, status: string) => {
     await supabase.from('orders').update({ status }).eq('id', orderId);
