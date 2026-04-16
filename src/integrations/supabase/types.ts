@@ -14,7 +14,265 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      categories: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string | null
+          name: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string | null
+          name?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          order_id: string
+          price: number
+          product_id: string | null
+          product_name: string
+          quantity: number
+          unit: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          order_id: string
+          price?: number
+          product_id?: string | null
+          product_name: string
+          quantity?: number
+          unit?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          order_id?: string
+          price?: number
+          product_id?: string | null
+          product_name?: string
+          quantity?: number
+          unit?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          address: string | null
+          change_amount: number | null
+          created_at: string
+          customer_name: string
+          delivery_fee: number
+          id: string
+          needs_change: boolean
+          notes: string | null
+          order_number: number
+          order_type: Database["public"]["Enums"]["order_type"]
+          payment_method: Database["public"]["Enums"]["payment_method"]
+          status: Database["public"]["Enums"]["order_status"]
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          change_amount?: number | null
+          created_at?: string
+          customer_name: string
+          delivery_fee?: number
+          id?: string
+          needs_change?: boolean
+          notes?: string | null
+          order_number?: number
+          order_type?: Database["public"]["Enums"]["order_type"]
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          change_amount?: number | null
+          created_at?: string
+          customer_name?: string
+          delivery_fee?: number
+          id?: string
+          needs_change?: boolean
+          notes?: string | null
+          order_number?: number
+          order_type?: Database["public"]["Enums"]["order_type"]
+          payment_method?: Database["public"]["Enums"]["payment_method"]
+          status?: Database["public"]["Enums"]["order_status"]
+          total?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          available: boolean
+          category_id: string | null
+          created_at: string
+          has_stock_control: boolean
+          id: string
+          image_url: string | null
+          is_promo: boolean
+          name: string
+          price: number
+          stock_minimum: number | null
+          stock_quantity: number | null
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          available?: boolean
+          category_id?: string | null
+          created_at?: string
+          has_stock_control?: boolean
+          id?: string
+          image_url?: string | null
+          is_promo?: boolean
+          name: string
+          price?: number
+          stock_minimum?: number | null
+          stock_quantity?: number | null
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          available?: boolean
+          category_id?: string | null
+          created_at?: string
+          has_stock_control?: boolean
+          id?: string
+          image_url?: string | null
+          is_promo?: boolean
+          name?: string
+          price?: number
+          stock_minimum?: number | null
+          stock_quantity?: number | null
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_logs: {
+        Row: {
+          created_at: string
+          id: string
+          product_id: string
+          quantity_change: number
+          reason: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          product_id: string
+          quantity_change: number
+          reason?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          product_id?: string
+          quantity_change?: number
+          reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_logs_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_settings: {
+        Row: {
+          active_whatsapp: string
+          created_at: string
+          delivery_fee_amount: number
+          delivery_fee_enabled: boolean
+          id: string
+          is_open: boolean
+          logo_url: string | null
+          opening_hours: string
+          store_name: string
+          updated_at: string
+          whatsapp_primary: string
+          whatsapp_secondary: string
+        }
+        Insert: {
+          active_whatsapp?: string
+          created_at?: string
+          delivery_fee_amount?: number
+          delivery_fee_enabled?: boolean
+          id?: string
+          is_open?: boolean
+          logo_url?: string | null
+          opening_hours?: string
+          store_name?: string
+          updated_at?: string
+          whatsapp_primary?: string
+          whatsapp_secondary?: string
+        }
+        Update: {
+          active_whatsapp?: string
+          created_at?: string
+          delivery_fee_amount?: number
+          delivery_fee_enabled?: boolean
+          id?: string
+          is_open?: boolean
+          logo_url?: string | null
+          opening_hours?: string
+          store_name?: string
+          updated_at?: string
+          whatsapp_primary?: string
+          whatsapp_secondary?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +281,14 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      order_status:
+        | "received"
+        | "preparing"
+        | "ready_pickup"
+        | "out_for_delivery"
+        | "completed"
+      order_type: "delivery" | "pickup"
+      payment_method: "pix" | "cash" | "card"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +415,16 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      order_status: [
+        "received",
+        "preparing",
+        "ready_pickup",
+        "out_for_delivery",
+        "completed",
+      ],
+      order_type: ["delivery", "pickup"],
+      payment_method: ["pix", "cash", "card"],
+    },
   },
 } as const
