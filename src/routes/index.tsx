@@ -1,45 +1,64 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useMemo } from 'react';
-import { Search } from 'lucide-react';
+import { Search, Clock, AlertCircle } from 'lucide-react';
 import { StoreHeader } from '@/components/customer/StoreHeader';
 import { CategoryBar } from '@/components/customer/CategoryBar';
 import { ProductCard } from '@/components/customer/ProductCard';
 import { FloatingCart } from '@/components/customer/FloatingCart';
-import { MOCK_CATEGORIES, MOCK_PRODUCTS } from '@/lib/mock-data';
+import { useCategories, useProducts, useStoreSettings } from '@/lib/hooks';
 
 export const Route = createFileRoute('/')({
   head: () => ({
     meta: [
       { title: 'Hortifruti da Família - Peça Online' },
       { name: 'description', content: 'Frutas, verduras e legumes fresquinhos. Monte seu pedido online e receba em casa!' },
-      { property: 'og:title', content: 'Hortifruti da Família' },
-      { property: 'og:description', content: 'Monte seu pedido online e receba em casa!' },
     ],
   }),
   component: StorePage,
 });
 
 function StorePage() {
+  const { categories, loading: catLoading } = useCategories();
+  const { products, loading: prodLoading } = useProducts();
+  const { settings } = useStoreSettings();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [search, setSearch] = useState('');
 
-  const promoProducts = MOCK_PRODUCTS.filter((p) => p.is_promo && p.available);
+  const availableProducts = products.filter((p) => p.available);
+  const promoProducts = availableProducts.filter((p) => p.is_promo);
 
   const filteredProducts = useMemo(() => {
-    let products = MOCK_PRODUCTS;
+    let list = availableProducts;
     if (activeCategory) {
-      products = products.filter((p) => p.category_id === activeCategory);
+      list = list.filter((p) => p.category_id === activeCategory);
     }
     if (search.trim()) {
       const q = search.toLowerCase();
-      products = products.filter((p) => p.name.toLowerCase().includes(q));
+      list = list.filter((p) => p.name.toLowerCase().includes(q));
     }
-    return products;
-  }, [activeCategory, search]);
+    return list;
+  }, [availableProducts, activeCategory, search]);
+
+  const loading = catLoading || prodLoading;
+
+  if (settings && !settings.is_open) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <div className="text-center space-y-3 max-w-sm">
+          <AlertCircle className="w-16 h-16 mx-auto text-warning" />
+          <h1 className="text-2xl font-extrabold">Estamos Fechados</h1>
+          <p className="text-muted-foreground">
+            Nosso horário de funcionamento: <strong>{settings.opening_hours}</strong>
+          </p>
+          <p className="text-sm text-muted-foreground">Volte em breve! 🍎</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      <StoreHeader />
+      <StoreHeader settings={settings} />
 
       {/* Search */}
       <div className="max-w-2xl mx-auto px-4 pt-3">
@@ -55,49 +74,47 @@ function StorePage() {
       </div>
 
       {/* Categories */}
-      <div className="max-w-2xl mx-auto">
-        <CategoryBar
-          categories={MOCK_CATEGORIES}
-          activeCategory={activeCategory}
-          onSelect={setActiveCategory}
-        />
-      </div>
-
-      {/* Promos section */}
-      {!activeCategory && !search && promoProducts.length > 0 && (
-        <div className="max-w-2xl mx-auto px-4 mb-4">
-          <h2 className="text-base font-extrabold mb-2 flex items-center gap-1">
-            🔥 Promoções do Dia
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            {promoProducts.map((p) => (
-              <ProductCard key={p.id} product={p} />
-            ))}
-          </div>
+      {!loading && (
+        <div className="max-w-2xl mx-auto">
+          <CategoryBar categories={categories} activeCategory={activeCategory} onSelect={setActiveCategory} />
         </div>
       )}
 
-      {/* All products */}
-      <div className="max-w-2xl mx-auto px-4">
-        {(activeCategory || search) && (
-          <h2 className="text-base font-extrabold mb-2">
-            {activeCategory
-              ? MOCK_CATEGORIES.find((c) => c.id === activeCategory)?.name || 'Produtos'
-              : `Resultados para "${search}"`}
-          </h2>
-        )}
-        {!activeCategory && !search && (
-          <h2 className="text-base font-extrabold mb-2">Todos os Produtos</h2>
-        )}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {filteredProducts.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
-        {filteredProducts.length === 0 && (
-          <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado</p>
-        )}
-      </div>
+      ) : (
+        <>
+          {/* Promos */}
+          {!activeCategory && !search && promoProducts.length > 0 && (
+            <div className="max-w-2xl mx-auto px-4 mb-4">
+              <h2 className="text-base font-extrabold mb-2 flex items-center gap-1">🔥 Promoções do Dia</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {promoProducts.map((p) => (
+                  <ProductCard key={p.id} product={p} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* All products */}
+          <div className="max-w-2xl mx-auto px-4">
+            {(activeCategory || search) && (
+              <h2 className="text-base font-extrabold mb-2">
+                {activeCategory ? categories.find((c) => c.id === activeCategory)?.name || 'Produtos' : `Resultados para "${search}"`}
+              </h2>
+            )}
+            {!activeCategory && !search && <h2 className="text-base font-extrabold mb-2">Todos os Produtos</h2>}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {filteredProducts.map((p) => (
+                <ProductCard key={p.id} product={p} />
+              ))}
+            </div>
+            {filteredProducts.length === 0 && <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado</p>}
+          </div>
+        </>
+      )}
 
       <FloatingCart />
     </div>
