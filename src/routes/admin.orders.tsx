@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useOrders } from '@/lib/hooks';
+import { useOrders, useStoreSettings } from '@/lib/hooks';
 import { supabase } from '@/integrations/supabase/client';
-import { ChevronDown, ChevronUp, Clock, Package, CheckCircle, Truck, Store, Eye } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock, Package, CheckCircle, Truck, Store, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export const Route = createFileRoute('/admin/orders')({
   component: AdminOrders,
@@ -18,8 +19,25 @@ const STATUS_OPTIONS = [
 
 function AdminOrders() {
   const { orders, refetch } = useOrders();
+  const { settings } = useStoreSettings();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
+  const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
+  const [deletePassword, setDeletePassword] = useState('');
+  const [deleteError, setDeleteError] = useState('');
+
+  const handleDelete = async () => {
+    if (!settings || !deleteOrderId) return;
+    const stored = (settings as any).delete_password || '';
+    if (!stored) { setDeleteError('Senha de exclusão não configurada nas Configurações.'); return; }
+    if (deletePassword !== stored) { setDeleteError('Senha incorreta.'); return; }
+    await supabase.from('order_items').delete().eq('order_id', deleteOrderId);
+    await supabase.from('orders').delete().eq('id', deleteOrderId);
+    setDeleteOrderId(null);
+    setDeletePassword('');
+    setDeleteError('');
+    refetch();
+  };
 
   const filtered = filter === 'all' ? orders : orders.filter((o: any) => o.status === filter);
 
@@ -101,6 +119,11 @@ function AdminOrders() {
                       ))}
                     </div>
                   </div>
+
+                  <button onClick={() => { setDeleteOrderId(order.id); setDeletePassword(''); setDeleteError(''); }}
+                    className="w-full py-2 rounded-xl bg-destructive/10 text-destructive font-bold text-xs flex items-center justify-center gap-2">
+                    <Trash2 className="w-4 h-4" /> Excluir Pedido
+                  </button>
                 </div>
               )}
             </div>
@@ -108,6 +131,21 @@ function AdminOrders() {
         })}
         {filtered.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum pedido</p>}
       </div>
+
+      <Dialog open={!!deleteOrderId} onOpenChange={(open) => { if (!open) setDeleteOrderId(null); }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Excluir Pedido</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">Digite a senha de exclusão para confirmar:</p>
+          <input type="password" value={deletePassword} onChange={(e) => { setDeletePassword(e.target.value); setDeleteError(''); }}
+            placeholder="Senha de exclusão" className="w-full px-4 py-2.5 rounded-xl border bg-background text-sm" />
+          {deleteError && <p className="text-xs text-destructive font-bold">{deleteError}</p>}
+          <button onClick={handleDelete} className="w-full py-3 rounded-xl bg-destructive text-destructive-foreground font-extrabold">
+            Confirmar Exclusão
+          </button>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
