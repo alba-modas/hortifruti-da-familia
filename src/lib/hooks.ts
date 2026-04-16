@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { Category, Product, StoreSettings } from './types';
 
@@ -6,7 +6,7 @@ export function useCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     const { data } = await supabase
       .from('categories')
       .select('*')
@@ -16,13 +16,14 @@ export function useCategories() {
   }, []);
 
   useEffect(() => {
-    fetch();
+    fetchData();
+    const channelName = `categories-realtime-${Date.now()}`;
     const channel = supabase
-      .channel('categories-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => fetch())
+      .channel(channelName)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'categories' }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [fetch]);
+  }, [fetchData]);
 
   return { categories, loading };
 }
@@ -31,7 +32,7 @@ export function useProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     const { data } = await supabase
       .from('products')
       .select('*')
@@ -41,22 +42,23 @@ export function useProducts() {
   }, []);
 
   useEffect(() => {
-    fetch();
+    fetchData();
+    const channelName = `products-realtime-${Date.now()}`;
     const channel = supabase
-      .channel('products-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetch())
+      .channel(channelName)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [fetch]);
+  }, [fetchData]);
 
-  return { products, loading, refetch: fetch };
+  return { products, loading, refetch: fetchData };
 }
 
 export function useStoreSettings() {
   const [settings, setSettings] = useState<StoreSettings | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     const { data } = await supabase
       .from('store_settings')
       .select('*')
@@ -67,22 +69,23 @@ export function useStoreSettings() {
   }, []);
 
   useEffect(() => {
-    fetch();
+    fetchData();
+    const channelName = `settings-realtime-${Date.now()}`;
     const channel = supabase
-      .channel('settings-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'store_settings' }, () => fetch())
+      .channel(channelName)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'store_settings' }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [fetch]);
+  }, [fetchData]);
 
-  return { settings, loading, refetch: fetch };
+  return { settings, loading, refetch: fetchData };
 }
 
 export function useOrders() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetch = useCallback(async () => {
+  const fetchData = useCallback(async () => {
     const { data } = await supabase
       .from('orders')
       .select('*, order_items(*)')
@@ -92,13 +95,14 @@ export function useOrders() {
   }, []);
 
   useEffect(() => {
-    fetch();
+    fetchData();
+    const channelName = `orders-realtime-${Date.now()}`;
     const channel = supabase
-      .channel('orders-realtime')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetch())
+      .channel(channelName)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => fetchData())
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [fetch]);
+  }, [fetchData]);
 
-  return { orders, loading, refetch: fetch };
+  return { orders, loading, refetch: fetchData };
 }
