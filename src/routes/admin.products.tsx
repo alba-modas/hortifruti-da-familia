@@ -4,6 +4,7 @@ import { useProducts, useCategories } from '@/lib/hooks';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Pencil, Trash2, Tag, Package, Search, X, Loader2, Camera, Upload } from 'lucide-react';
 import type { Product } from '@/lib/types';
+import { processImage } from '@/lib/image-utils';
 
 export const Route = createFileRoute('/admin/products')({
   component: AdminProducts,
@@ -69,11 +70,29 @@ function AdminProducts() {
     if (!file || !editing) return;
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop();
-      const path = `products/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('product-images').upload(path, file, { upsert: true });
-      if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+      // Process: resize to max 1200px (full) and 600px (thumb), convert to WebP
+      const { full, thumb } = await processImage(file);
+      const stamp = Date.now();
+      const fullPath = `products/${stamp}.webp`;
+      const thumbPath = `products/${stamp}_thumb.webp`;
+
+      const [fullRes, thumbRes] = await Promise.all([
+        supabase.storage.from('product-images').upload(fullPath, full, {
+          upsert: true,
+          contentType: 'image/webp',
+          cacheControl: '31536000',
+        }),
+        supabase.storage.from('product-images').upload(thumbPath, thumb, {
+          upsert: true,
+          contentType: 'image/webp',
+          cacheControl: '31536000',
+        }),
+      ]);
+      if (fullRes.error) throw fullRes.error;
+      if (thumbRes.error) throw thumbRes.error;
+
+      // Store the full URL in image_url (thumbnail is co-located via _thumb suffix)
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fullPath);
       setEditing({ ...editing, image_url: publicUrl });
     } catch (err) {
       console.error(err);
@@ -109,7 +128,7 @@ function AdminProducts() {
         {filtered.map((p) => (
           <div key={p.id} className={`bg-card rounded-xl p-3 shadow-sm flex items-center gap-3 ${!p.available ? 'opacity-50' : ''}`}>
             <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center overflow-hidden shrink-0">
-              {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" /> : <Package className="w-5 h-5 text-muted-foreground" />}
+              {p.image_url ? <img src={p.image_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" /> : <Package className="w-5 h-5 text-muted-foreground" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
@@ -191,7 +210,7 @@ function AdminProducts() {
               <label className="block text-sm font-bold mb-1">Imagem</label>
               {editing.image_url && (
                 <div className="relative w-24 h-24 mb-2">
-                  <img src={editing.image_url} alt="" className="w-full h-full object-cover rounded-xl" />
+                  <img src={editing.image_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover rounded-xl" />
                   <button onClick={() => setEditing({ ...editing, image_url: '' })} className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center">
                     <X className="w-3 h-3" />
                   </button>

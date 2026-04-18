@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Clock, AlertCircle } from 'lucide-react';
 import { StoreHeader } from '@/components/customer/StoreHeader';
 import { CategoryBar } from '@/components/customer/CategoryBar';
@@ -23,6 +23,7 @@ function StorePage() {
   const { settings } = useStoreSettings();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(12);
 
   const availableProducts = products.filter((p) => p.available);
   const promoProducts = availableProducts.filter((p) => p.is_promo);
@@ -38,6 +39,14 @@ function StorePage() {
     }
     return list;
   }, [availableProducts, activeCategory, search]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [activeCategory, search]);
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const hasMore = filteredProducts.length > visibleCount;
 
   const loading = catLoading || prodLoading;
 
@@ -108,10 +117,20 @@ function StorePage() {
             )}
             {!activeCategory && !search && <h2 className="text-base font-extrabold mb-2">Todos os Produtos</h2>}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {filteredProducts.map((p) => (
+              {visibleProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
+            {hasMore && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setVisibleCount((c) => c + 12)}
+                  className="px-5 py-2.5 rounded-xl bg-secondary text-foreground font-bold text-sm hover:bg-secondary/80 active:scale-[0.98] transition"
+                >
+                  Carregar mais
+                </button>
+              </div>
+            )}
             {filteredProducts.length === 0 && <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado</p>}
           </div>
         </>

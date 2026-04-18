@@ -13,7 +13,13 @@ export function StoreHeader({ settings }: StoreHeaderProps) {
       <div className="max-w-2xl mx-auto px-4 py-3 flex items-center gap-3">
         <div className="w-10 h-10 bg-primary-foreground/20 rounded-full flex items-center justify-center overflow-hidden">
           {settings?.logo_url ? (
-            <img src={settings.logo_url} alt={name} className="w-full h-full object-cover" />
+            <img
+              src={settings.logo_url}
+              alt={name}
+              decoding="async"
+              fetchPriority="high"
+              className="w-full h-full object-cover"
+            />
           ) : (
             <Store className="w-6 h-6" />
           )}
