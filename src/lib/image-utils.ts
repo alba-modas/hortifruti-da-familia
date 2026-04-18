@@ -59,3 +59,16 @@ export async function processImage(file: File): Promise<ProcessedImages> {
   ]);
   return { full, thumb };
 }
+
+/**
+ * Given a full image URL produced by processImage upload, return the
+ * thumbnail URL (same path with `_thumb` suffix before `.webp`).
+ * Falls back to the original URL for legacy (non-webp) uploads.
+ */
+export function getThumbnailUrl(url: string | null | undefined): string {
+  if (!url) return '';
+  if (/\.webp(\?|$)/i.test(url) && !/_thumb\.webp/i.test(url)) {
+    return url.replace(/\.webp(\?|$)/i, '_thumb.webp$1');
+  }
+  return url;
+}

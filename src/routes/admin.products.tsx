@@ -128,7 +128,7 @@ function AdminProducts() {
         {filtered.map((p) => (
           <div key={p.id} className={`bg-card rounded-xl p-3 shadow-sm flex items-center gap-3 ${!p.available ? 'opacity-50' : ''}`}>
             <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center overflow-hidden shrink-0">
-              {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" /> : <Package className="w-5 h-5 text-muted-foreground" />}
+              {p.image_url ? <img src={p.image_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" /> : <Package className="w-5 h-5 text-muted-foreground" />}
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-1">
@@ -210,7 +210,7 @@ function AdminProducts() {
               <label className="block text-sm font-bold mb-1">Imagem</label>
               {editing.image_url && (
                 <div className="relative w-24 h-24 mb-2">
-                  <img src={editing.image_url} alt="" className="w-full h-full object-cover rounded-xl" />
+                  <img src={editing.image_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover rounded-xl" />
                   <button onClick={() => setEditing({ ...editing, image_url: '' })} className="absolute -top-2 -right-2 w-6 h-6 bg-destructive text-destructive-foreground rounded-full flex items-center justify-center">
                     <X className="w-3 h-3" />
                   </button>
