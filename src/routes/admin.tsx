@@ -5,6 +5,7 @@ import { useEffect } from 'react';
 import { Package, ShoppingCart, Settings, LogOut, LayoutDashboard, FolderOpen, Loader2, Bell, BellOff } from 'lucide-react';
 import { Toaster } from '@/components/ui/sonner';
 import { useNewOrderSound } from '@/lib/use-new-order-sound';
+import { useOrders } from '@/lib/hooks';
 
 export const Route = createFileRoute('/admin')({
   head: () => ({
