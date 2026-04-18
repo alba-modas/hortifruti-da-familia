@@ -4,6 +4,7 @@ import { useProducts, useCategories } from '@/lib/hooks';
 import { supabase } from '@/integrations/supabase/client';
 import { Plus, Pencil, Trash2, Tag, Package, Search, X, Loader2, Camera, Upload } from 'lucide-react';
 import type { Product } from '@/lib/types';
+import { processImage } from '@/lib/image-utils';
 
 export const Route = createFileRoute('/admin/products')({
   component: AdminProducts,
@@ -69,11 +70,29 @@ function AdminProducts() {
     if (!file || !editing) return;
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop();
-      const path = `products/${Date.now()}.${ext}`;
-      const { error } = await supabase.storage.from('product-images').upload(path, file, { upsert: true });
-      if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
+      // Process: resize to max 1200px (full) and 600px (thumb), convert to WebP
+      const { full, thumb } = await processImage(file);
+      const stamp = Date.now();
+      const fullPath = `products/${stamp}.webp`;
+      const thumbPath = `products/${stamp}_thumb.webp`;
+
+      const [fullRes, thumbRes] = await Promise.all([
+        supabase.storage.from('product-images').upload(fullPath, full, {
+          upsert: true,
+          contentType: 'image/webp',
+          cacheControl: '31536000',
+        }),
+        supabase.storage.from('product-images').upload(thumbPath, thumb, {
+          upsert: true,
+          contentType: 'image/webp',
+          cacheControl: '31536000',
+        }),
+      ]);
+      if (fullRes.error) throw fullRes.error;
+      if (thumbRes.error) throw thumbRes.error;
+
+      // Store the full URL in image_url (thumbnail is co-located via _thumb suffix)
+      const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fullPath);
       setEditing({ ...editing, image_url: publicUrl });
     } catch (err) {
       console.error(err);
