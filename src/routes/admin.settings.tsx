@@ -218,6 +218,33 @@ function AdminSettings() {
           {saving ? 'Salvando...' : 'Salvar Configurações'}
         </button>
       </div>
+
+      <div className="bg-card rounded-2xl p-4 shadow-sm space-y-3">
+        <div>
+          <h3 className="font-extrabold text-sm flex items-center gap-1"><Zap className="w-4 h-4 text-primary" /> Otimização de imagens</h3>
+          <p className="text-xs text-muted-foreground mt-1">
+            Reprocessa todas as imagens antigas para WebP com versões thumb/full. Mantenha esta aba aberta durante o processo.
+          </p>
+        </div>
+        {migrateProgress && migrateProgress.total > 0 && (
+          <div className="space-y-1">
+            <div className="h-2 bg-secondary rounded-full overflow-hidden">
+              <div className="h-full bg-primary transition-all" style={{ width: `${(migrateProgress.done / migrateProgress.total) * 100}%` }} />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {migrateProgress.done}/{migrateProgress.total} — ✓ {migrateProgress.ok} • ✗ {migrateProgress.fail}
+            </p>
+          </div>
+        )}
+        <button
+          onClick={handleMigrateImages}
+          disabled={migrating}
+          className="w-full py-2.5 rounded-xl bg-secondary text-foreground font-bold text-sm disabled:opacity-60 flex items-center justify-center gap-2"
+        >
+          {migrating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Zap className="w-4 h-4" />}
+          {migrating ? 'Otimizando...' : 'Otimizar imagens antigas'}
+        </button>
+      </div>
     </div>
   );
 }
