@@ -88,6 +88,8 @@ function AdminLayout() {
           })}
         </div>
       </nav>
+
+      <Toaster position="top-right" richColors />
     </div>
   );
 }
