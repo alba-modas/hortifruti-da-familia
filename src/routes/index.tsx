@@ -139,12 +139,37 @@ function StorePage() {
                 <ProductCard key={p.id} product={p} priority={!promoProducts.length && i < 4} />
               ))}
             </div>
-            {hasMore && (
+            {hasMore ? (
               <div ref={sentinelRef} className="flex justify-center items-center py-6" aria-hidden="true">
                 <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
               </div>
+            ) : (
+              filteredProducts.length > 0 && (
+                <p className="text-center text-xs text-muted-foreground py-6 animate-in fade-in duration-500">
+                  Esses são os produtos disponíveis no momento
+                </p>
+              )
             )}
             {filteredProducts.length === 0 && <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado</p>}
+
+            {/* WhatsApp CTA */}
+            {(() => {
+              const wa = settings?.active_whatsapp === 'secondary' ? settings?.whatsapp_secondary : settings?.whatsapp_primary;
+              if (!wa) return null;
+              const phone = wa.replace(/\D/g, '');
+              const msg = encodeURIComponent('Olá! Não encontrei o que procuro no site. Pode me ajudar?');
+              return (
+                <a
+                  href={`https://wa.me/${phone}?text=${msg}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-6 mb-4 flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-green-500/10 text-green-700 dark:text-green-400 font-bold text-sm hover:bg-green-500/20 transition-colors"
+                >
+                  <MessageCircle className="w-4 h-4" />
+                  Não encontrou o que procura? Fale conosco no WhatsApp
+                </a>
+              );
+            })()}
           </div>
         </>
       )}
