@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { Search, AlertCircle } from 'lucide-react';
+import { Search, AlertCircle, MessageCircle } from 'lucide-react';
 import { StoreHeader } from '@/components/customer/StoreHeader';
 import { CategoryBar } from '@/components/customer/CategoryBar';
 import { ProductCard } from '@/components/customer/ProductCard';
