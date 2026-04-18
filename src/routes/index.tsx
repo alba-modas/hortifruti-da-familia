@@ -140,13 +140,8 @@ function StorePage() {
               ))}
             </div>
             {hasMore && (
-              <div className="flex justify-center mt-4">
-                <button
-                  onClick={() => setVisibleCount((c) => c + 12)}
-                  className="px-5 py-2.5 rounded-xl bg-secondary text-foreground font-bold text-sm hover:bg-secondary/80 active:scale-[0.98] transition"
-                >
-                  Carregar mais
-                </button>
+              <div ref={sentinelRef} className="flex justify-center items-center py-6" aria-hidden="true">
+                <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
               </div>
             )}
             {filteredProducts.length === 0 && <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado</p>}
