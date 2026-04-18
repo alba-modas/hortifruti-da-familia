@@ -22,6 +22,7 @@ function AdminOrders() {
   const { settings } = useStoreSettings();
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
+  const [dateFilter, setDateFilter] = useState<'all' | 'today' | 'yesterday' | 'last7'>('all');
   const [deleteOrderId, setDeleteOrderId] = useState<string | null>(null);
   const [deletePassword, setDeletePassword] = useState('');
   const [deleteError, setDeleteError] = useState('');
@@ -39,24 +40,62 @@ function AdminOrders() {
     refetch();
   };
 
-  const filtered = filter === 'all' ? orders : orders.filter((o: any) => o.status === filter);
+  const matchesDate = (createdAt: string) => {
+    if (dateFilter === 'all') return true;
+    const created = new Date(createdAt);
+    const now = new Date();
+    const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (dateFilter === 'today') {
+      const endToday = new Date(startToday); endToday.setDate(endToday.getDate() + 1);
+      return created >= startToday && created < endToday;
+    }
+    if (dateFilter === 'yesterday') {
+      const startYesterday = new Date(startToday); startYesterday.setDate(startYesterday.getDate() - 1);
+      return created >= startYesterday && created < startToday;
+    }
+    if (dateFilter === 'last7') {
+      const start7 = new Date(startToday); start7.setDate(start7.getDate() - 6);
+      return created >= start7;
+    }
+    return true;
+  };
+
+  const dateFiltered = orders.filter((o: any) => matchesDate(o.created_at));
+  const filtered = filter === 'all' ? dateFiltered : dateFiltered.filter((o: any) => o.status === filter);
 
   const updateStatus = async (orderId: string, status: string) => {
     await supabase.from('orders').update({ status: status as any }).eq('id', orderId);
     refetch();
   };
 
+  const DATE_OPTIONS: { value: typeof dateFilter; label: string }[] = [
+    { value: 'all', label: 'Todas as datas' },
+    { value: 'today', label: 'Hoje' },
+    { value: 'yesterday', label: 'Ontem' },
+    { value: 'last7', label: 'Últimos 7 dias' },
+  ];
+
   return (
     <div className="space-y-4 pb-20">
       <h2 className="text-xl font-extrabold">Pedidos</h2>
 
-      {/* Filter */}
+      {/* Date filter */}
+      <div className="flex gap-2 overflow-x-auto no-scrollbar">
+        {DATE_OPTIONS.map((d) => (
+          <button key={d.value} onClick={() => setDateFilter(d.value)}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${dateFilter === d.value ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
+            {d.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Status filter */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar">
         <button onClick={() => setFilter('all')} className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${filter === 'all' ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
-          Todos ({orders.length})
+          Todos ({dateFiltered.length})
         </button>
         {STATUS_OPTIONS.map((s) => {
-          const count = orders.filter((o) => o.status === s.value).length;
+          const count = dateFiltered.filter((o) => o.status === s.value).length;
           return (
             <button key={s.value} onClick={() => setFilter(s.value)} className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap ${filter === s.value ? 'bg-primary text-primary-foreground' : 'bg-secondary'}`}>
               {s.label} ({count})
