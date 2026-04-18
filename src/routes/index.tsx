@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useMemo, useEffect } from 'react';
-import { Search, Clock, AlertCircle } from 'lucide-react';
+import { useState, useMemo, useEffect, useRef } from 'react';
+import { Search, AlertCircle } from 'lucide-react';
 import { StoreHeader } from '@/components/customer/StoreHeader';
 import { CategoryBar } from '@/components/customer/CategoryBar';
 import { ProductCard } from '@/components/customer/ProductCard';
@@ -47,6 +47,24 @@ function StorePage() {
 
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = filteredProducts.length > visibleCount;
+
+  // Infinite scroll via IntersectionObserver
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount((c) => c + 12);
+        }
+      },
+      { rootMargin: '400px 0px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasMore, filteredProducts.length]);
 
   const loading = catLoading || prodLoading;
 
@@ -122,13 +140,8 @@ function StorePage() {
               ))}
             </div>
             {hasMore && (
-              <div className="flex justify-center mt-4">
-                <button
-                  onClick={() => setVisibleCount((c) => c + 12)}
-                  className="px-5 py-2.5 rounded-xl bg-secondary text-foreground font-bold text-sm hover:bg-secondary/80 active:scale-[0.98] transition"
-                >
-                  Carregar mais
-                </button>
+              <div ref={sentinelRef} className="flex justify-center items-center py-6" aria-hidden="true">
+                <div className="w-6 h-6 rounded-full border-2 border-primary border-t-transparent animate-spin" />
               </div>
             )}
             {filteredProducts.length === 0 && <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado</p>}

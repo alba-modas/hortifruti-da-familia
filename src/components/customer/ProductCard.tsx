@@ -1,4 +1,5 @@
 import { Plus, Minus, Tag, AlertTriangle } from 'lucide-react';
+import { useState } from 'react';
 import { useCartStore } from '@/lib/cart-store';
 import type { Product } from '@/lib/types';
 import { motion } from 'framer-motion';
@@ -13,6 +14,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const { items, addItem, removeItem } = useCartStore();
   const cartItem = items.find((i) => i.product.id === product.id);
   const quantity = cartItem?.quantity || 0;
+  const [imgLoaded, setImgLoaded] = useState(false);
 
   const isLowStock = product.has_stock_control && product.stock_quantity != null && product.stock_minimum != null && product.stock_quantity <= product.stock_minimum && product.stock_quantity > 0;
   const isOutOfStock = !product.available || (product.has_stock_control && product.stock_quantity != null && product.stock_quantity <= 0);
@@ -40,16 +42,21 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
       </div>
 
       {/* Image */}
-      <div className="h-28 bg-secondary flex items-center justify-center overflow-hidden">
+      <div className="h-28 bg-secondary flex items-center justify-center overflow-hidden relative">
         {product.image_url ? (
-          <img
-            src={getThumbnailUrl(product.image_url)}
-            alt={product.name}
-            loading={priority ? 'eager' : 'lazy'}
-            decoding="async"
-            {...(priority ? { fetchPriority: 'high' as const } : {})}
-            className="w-full h-full object-cover"
-          />
+          <>
+            {!imgLoaded && <div className="absolute inset-0 shimmer" aria-hidden="true" />}
+            <img
+              src={getThumbnailUrl(product.image_url)}
+              alt={product.name}
+              loading={priority ? 'eager' : 'lazy'}
+              decoding="async"
+              {...(priority ? { fetchPriority: 'high' as const } : {})}
+              onLoad={() => setImgLoaded(true)}
+              onError={() => setImgLoaded(true)}
+              className={`w-full h-full object-cover transition-opacity duration-300 ${imgLoaded ? 'opacity-100' : 'opacity-0'}`}
+            />
+          </>
         ) : (
           <span className="text-3xl">
             {product.category_id === '1' ? '🍎' : product.category_id === '2' ? '🥬' : product.category_id === '3' ? '🥕' : product.category_id === '4' ? '🛒' : product.category_id === '5' ? '🐾' : '📦'}
