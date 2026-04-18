@@ -61,6 +61,26 @@ export async function processImage(file: File): Promise<ProcessedImages> {
 }
 
 /**
+ * Reprocess a remote image URL — fetch it, resize, convert to WebP and return
+ * both versions. Used by the admin "optimize all images" migration.
+ */
+export async function reprocessRemoteImage(url: string): Promise<ProcessedImages> {
+  const res = await fetch(url, { mode: 'cors', cache: 'no-store' });
+  if (!res.ok) throw new Error(`Falha ao baixar imagem (${res.status})`);
+  const blob = await res.blob();
+  const file = new File([blob], 'remote', { type: blob.type || 'image/jpeg' });
+  return processImage(file);
+}
+
+/**
+ * Optimize a logo for hero/header use — single small WebP under ~50KB.
+ */
+export async function processLogo(file: File): Promise<Blob> {
+  const img = await loadImage(file);
+  return processToWebP(img, { maxWidth: 200, quality: 0.8 });
+}
+
+/**
  * Given a full image URL produced by processImage upload, return the
  * thumbnail URL (same path with `_thumb` suffix before `.webp`).
  * Falls back to the original URL for legacy (non-webp) uploads.

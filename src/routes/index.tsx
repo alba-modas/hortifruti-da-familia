@@ -101,8 +101,8 @@ function StorePage() {
             <div className="max-w-2xl mx-auto px-4 mb-4">
               <h2 className="text-base font-extrabold mb-2 flex items-center gap-1">🔥 Promoções do Dia</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {promoProducts.map((p) => (
-                  <ProductCard key={p.id} product={p} />
+                {promoProducts.map((p, i) => (
+                  <ProductCard key={p.id} product={p} priority={i < 4} />
                 ))}
               </div>
             </div>
@@ -117,8 +117,8 @@ function StorePage() {
             )}
             {!activeCategory && !search && <h2 className="text-base font-extrabold mb-2">Todos os Produtos</h2>}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {visibleProducts.map((p) => (
-                <ProductCard key={p.id} product={p} />
+              {visibleProducts.map((p, i) => (
+                <ProductCard key={p.id} product={p} priority={!promoProducts.length && i < 4} />
               ))}
             </div>
             {hasMore && (

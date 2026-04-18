@@ -6,9 +6,10 @@ import { getThumbnailUrl } from '@/lib/image-utils';
 
 interface ProductCardProps {
   product: Product;
+  priority?: boolean;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
+export function ProductCard({ product, priority = false }: ProductCardProps) {
   const { items, addItem, removeItem } = useCartStore();
   const cartItem = items.find((i) => i.product.id === product.id);
   const quantity = cartItem?.quantity || 0;
@@ -44,8 +45,9 @@ export function ProductCard({ product }: ProductCardProps) {
           <img
             src={getThumbnailUrl(product.image_url)}
             alt={product.name}
-            loading="lazy"
+            loading={priority ? 'eager' : 'lazy'}
             decoding="async"
+            {...(priority ? { fetchPriority: 'high' as const } : {})}
             className="w-full h-full object-cover"
           />
         ) : (
