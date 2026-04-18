@@ -2,8 +2,8 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useState, useEffect } from 'react';
 import { useStoreSettings } from '@/lib/hooks';
 import { supabase } from '@/integrations/supabase/client';
-import { Save, Loader2, Upload, X, Zap } from 'lucide-react';
-import { processLogo, reprocessRemoteImage } from '@/lib/image-utils';
+import { Save, Loader2, Upload, X } from 'lucide-react';
+import { processLogo } from '@/lib/image-utils';
 
 export const Route = createFileRoute('/admin/settings')({
   component: AdminSettings,
