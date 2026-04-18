@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Search, Clock, AlertCircle } from 'lucide-react';
 import { StoreHeader } from '@/components/customer/StoreHeader';
 import { CategoryBar } from '@/components/customer/CategoryBar';
@@ -23,6 +23,7 @@ function StorePage() {
   const { settings } = useStoreSettings();
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [search, setSearch] = useState('');
+  const [visibleCount, setVisibleCount] = useState(12);
 
   const availableProducts = products.filter((p) => p.available);
   const promoProducts = availableProducts.filter((p) => p.is_promo);
@@ -38,6 +39,14 @@ function StorePage() {
     }
     return list;
   }, [availableProducts, activeCategory, search]);
+
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(12);
+  }, [activeCategory, search]);
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount);
+  const hasMore = filteredProducts.length > visibleCount;
 
   const loading = catLoading || prodLoading;
 
