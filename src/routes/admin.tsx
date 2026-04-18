@@ -2,7 +2,9 @@ import { createFileRoute, Outlet, Link, useLocation } from '@tanstack/react-rout
 import { useAuth } from '@/lib/auth';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import { Package, ShoppingCart, Settings, LogOut, LayoutDashboard, FolderOpen, Loader2 } from 'lucide-react';
+import { Package, ShoppingCart, Settings, LogOut, LayoutDashboard, FolderOpen, Loader2, Bell, BellOff } from 'lucide-react';
+import { Toaster } from '@/components/ui/sonner';
+import { useNewOrderSound } from '@/lib/use-new-order-sound';
 
 export const Route = createFileRoute('/admin')({
   head: () => ({
@@ -15,6 +17,7 @@ function AdminLayout() {
   const { isAuthenticated, loading, signOut } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const { enabled: soundEnabled, setEnabled: setSoundEnabled } = useNewOrderSound();
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
@@ -49,9 +52,19 @@ function AdminLayout() {
         <h1 className="font-extrabold text-primary flex items-center gap-2">
           <LayoutDashboard className="w-5 h-5" /> Admin
         </h1>
-        <button onClick={() => signOut()} className="text-sm text-muted-foreground hover:text-destructive flex items-center gap-1">
-          <LogOut className="w-4 h-4" /> Sair
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setSoundEnabled(!soundEnabled)}
+            title={soundEnabled ? 'Som de novos pedidos: ATIVO' : 'Som de novos pedidos: SILENCIADO'}
+            aria-label="Alternar som de novos pedidos"
+            className={`p-1.5 rounded-lg transition-colors ${soundEnabled ? 'text-primary hover:bg-primary/10' : 'text-muted-foreground hover:bg-secondary'}`}
+          >
+            {soundEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+          </button>
+          <button onClick={() => signOut()} className="text-sm text-muted-foreground hover:text-destructive flex items-center gap-1">
+            <LogOut className="w-4 h-4" /> Sair
+          </button>
+        </div>
       </header>
 
       {/* Content */}
