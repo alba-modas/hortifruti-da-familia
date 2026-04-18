@@ -117,10 +117,20 @@ function StorePage() {
             )}
             {!activeCategory && !search && <h2 className="text-base font-extrabold mb-2">Todos os Produtos</h2>}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {filteredProducts.map((p) => (
+              {visibleProducts.map((p) => (
                 <ProductCard key={p.id} product={p} />
               ))}
             </div>
+            {hasMore && (
+              <div className="flex justify-center mt-4">
+                <button
+                  onClick={() => setVisibleCount((c) => c + 12)}
+                  className="px-5 py-2.5 rounded-xl bg-secondary text-foreground font-bold text-sm hover:bg-secondary/80 active:scale-[0.98] transition"
+                >
+                  Carregar mais
+                </button>
+              </div>
+            )}
             {filteredProducts.length === 0 && <p className="text-center text-muted-foreground py-12">Nenhum produto encontrado</p>}
           </div>
         </>
