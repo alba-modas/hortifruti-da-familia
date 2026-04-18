@@ -18,6 +18,8 @@ function AdminSettings() {
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [migrating, setMigrating] = useState(false);
+  const [migrateProgress, setMigrateProgress] = useState<{ done: number; total: number; ok: number; fail: number } | null>(null);
 
   useEffect(() => {
     if (settings) {
@@ -64,13 +66,71 @@ function AdminSettings() {
     if (!file) return;
     setUploading(true);
     try {
-      const ext = file.name.split('.').pop();
-      const path = `logo/${Date.now()}.${ext}`;
-      await supabase.storage.from('product-images').upload(path, file, { upsert: true });
+      // Resize logo to <=200px and convert to WebP for tiny header payload
+      const optimized = await processLogo(file);
+      const path = `logo/${Date.now()}.webp`;
+      await supabase.storage.from('product-images').upload(path, optimized, {
+        upsert: true,
+        contentType: 'image/webp',
+        cacheControl: '31536000',
+      });
       const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(path);
       setForm({ ...form, logo_url: publicUrl });
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleMigrateImages = async () => {
+    if (migrating) return;
+    if (!confirm('Reprocessar todas as imagens não-WebP dos produtos? Isso pode demorar alguns minutos.')) return;
+    setMigrating(true);
+    setMigrateProgress({ done: 0, total: 0, ok: 0, fail: 0 });
+    try {
+      const { data: products, error } = await supabase
+        .from('products')
+        .select('id, image_url')
+        .not('image_url', 'is', null);
+      if (error) throw error;
+
+      const targets = (products || []).filter(
+        (p) => p.image_url && !/\.webp(\?|$)/i.test(p.image_url)
+      );
+      let ok = 0;
+      let fail = 0;
+      setMigrateProgress({ done: 0, total: targets.length, ok: 0, fail: 0 });
+
+      for (let i = 0; i < targets.length; i++) {
+        const p = targets[i];
+        try {
+          const { full, thumb } = await reprocessRemoteImage(p.image_url!);
+          const stamp = Date.now();
+          const fullPath = `products/${stamp}-${i}.webp`;
+          const thumbPath = `products/${stamp}-${i}_thumb.webp`;
+          const [fullRes, thumbRes] = await Promise.all([
+            supabase.storage.from('product-images').upload(fullPath, full, {
+              upsert: true, contentType: 'image/webp', cacheControl: '31536000',
+            }),
+            supabase.storage.from('product-images').upload(thumbPath, thumb, {
+              upsert: true, contentType: 'image/webp', cacheControl: '31536000',
+            }),
+          ]);
+          if (fullRes.error || thumbRes.error) throw fullRes.error || thumbRes.error;
+          const { data: { publicUrl } } = supabase.storage.from('product-images').getPublicUrl(fullPath);
+          await supabase.from('products').update({ image_url: publicUrl }).eq('id', p.id);
+          ok++;
+        } catch (err) {
+          console.error('Falha ao migrar imagem', p.id, err);
+          fail++;
+        }
+        setMigrateProgress({ done: i + 1, total: targets.length, ok, fail });
+      }
+      alert(`Migração concluída: ${ok} sucesso, ${fail} falhas (de ${targets.length}).`);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao iniciar migração. Veja o console.');
+    } finally {
+      setMigrating(false);
     }
   };
 
