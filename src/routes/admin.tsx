@@ -19,6 +19,8 @@ function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { enabled: soundEnabled, setEnabled: setSoundEnabled } = useNewOrderSound();
+  const { orders } = useOrders();
+  const receivedCount = orders.filter((o: any) => o.status === 'received').length;
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
