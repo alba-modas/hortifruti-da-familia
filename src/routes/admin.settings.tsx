@@ -18,8 +18,6 @@ function AdminSettings() {
   });
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [migrating, setMigrating] = useState(false);
-  const [migrateProgress, setMigrateProgress] = useState<{ done: number; total: number; ok: number; fail: number } | null>(null);
 
   useEffect(() => {
     if (settings) {
