@@ -75,9 +75,38 @@ function AdminOrders() {
     { value: 'last7', label: 'Últimos 7 dias' },
   ];
 
+  // Stats for today
+  const today = new Date();
+  const startToday = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const endToday = new Date(startToday); endToday.setDate(endToday.getDate() + 1);
+  const todaysOrders = orders.filter((o: any) => {
+    const c = new Date(o.created_at);
+    return c >= startToday && c < endToday;
+  });
+  const totalSales = todaysOrders.reduce((sum, o: any) => sum + Number(o.total || 0), 0);
+  const orderCount = todaysOrders.length;
+  const avgTicket = orderCount > 0 ? totalSales / orderCount : 0;
+  const fmt = (v: number) => `R$ ${v.toFixed(2).replace('.', ',')}`;
+
   return (
     <div className="space-y-4 pb-20">
       <h2 className="text-xl font-extrabold">Pedidos</h2>
+
+      {/* Stats summary */}
+      <div className="grid grid-cols-3 gap-2">
+        <div className="bg-card rounded-xl p-3 shadow-sm">
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide">Vendas Hoje</p>
+          <p className="text-sm font-extrabold text-primary mt-1">{fmt(totalSales)}</p>
+        </div>
+        <div className="bg-card rounded-xl p-3 shadow-sm">
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide">Ticket Médio</p>
+          <p className="text-sm font-extrabold mt-1">{fmt(avgTicket)}</p>
+        </div>
+        <div className="bg-card rounded-xl p-3 shadow-sm">
+          <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wide">Pedidos</p>
+          <p className="text-sm font-extrabold mt-1">{orderCount}</p>
+        </div>
+      </div>
 
       {/* Date filter */}
       <div className="flex gap-2 overflow-x-auto no-scrollbar">
