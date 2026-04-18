@@ -48,6 +48,24 @@ function StorePage() {
   const visibleProducts = filteredProducts.slice(0, visibleCount);
   const hasMore = filteredProducts.length > visibleCount;
 
+  // Infinite scroll via IntersectionObserver
+  const sentinelRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+    if (!hasMore) return;
+    const el = sentinelRef.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleCount((c) => c + 12);
+        }
+      },
+      { rootMargin: '400px 0px' }
+    );
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, [hasMore, filteredProducts.length]);
+
   const loading = catLoading || prodLoading;
 
   if (settings && !settings.is_open) {
