@@ -81,10 +81,18 @@ function AdminLayout() {
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = item.exact ? location.pathname === item.to : isActive(item.to);
+            const showBadge = item.to === '/admin/orders' && receivedCount > 0;
             return (
               <Link key={item.to} to={item.to}
-                className={`flex flex-col items-center gap-0.5 py-2 px-3 text-xs font-bold transition-colors ${active ? 'text-primary' : 'text-muted-foreground'}`}>
-                <Icon className="w-5 h-5" />
+                className={`relative flex flex-col items-center gap-0.5 py-2 px-3 text-xs font-bold transition-colors ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+                <div className="relative">
+                  <Icon className="w-5 h-5" />
+                  {showBadge && (
+                    <span className="absolute -top-1.5 -right-2 min-w-[16px] h-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-extrabold flex items-center justify-center leading-none">
+                      {receivedCount > 99 ? '99+' : receivedCount}
+                    </span>
+                  )}
+                </div>
                 {item.label}
               </Link>
             );
